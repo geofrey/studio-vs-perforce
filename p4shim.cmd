@@ -1,1 +1,1 @@
-c:\dev\tools\p4shim.py %*
+c:\dev\tools\studio-vs-perforce\p4shim.py %*

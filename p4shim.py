@@ -16,6 +16,7 @@ def extricate(flag, envname):
 #extricate('-u', 'P4USER')
 #extricate('-P', 'P4PASSWD')
 
+# It may be peculiar to my setup, but p4 is ignoring the username and password options and only responds to the corresponding environment variables.
 to_env = [('-u', 'P4USER'), ('-P', 'P4PASSWD')]
 list(map(lambda params: extricate(*params), to_env)) # list() to force evaluation - map is lazy?
 
@@ -24,7 +25,7 @@ for i in range(len(args)):
 		args[i] = '"{}"'.format(args[i]) # re-quote arguments that need 'em. doesn't handle escapes.
 commandline = ' '.join(['p4']+args)
 
-log = open(r'c:\dev\tools\p4shim.txt', 'a')
+log = open(r'c:\dev\tools\studio-vs-perforce\p4shim.txt', 'a')
 stamp = datetime.datetime.now()
 log.write('{}\t{} {}\n'.format(stamp, sys.argv[0], ' '.join(args)))
 log.flush()
