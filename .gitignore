@@ -1,6 +1,9 @@
 # don't check in the log file; it might contain sensitive information ; )
 p4shim.txt
 
+# ditto
+p4shim.password
+
 *.py[cod]
 
 # C extensions
