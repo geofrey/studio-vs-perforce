@@ -8,6 +8,9 @@ import time
 
 args = sys.argv[1:]
 
+log = open(r'c:\dev\tools\studio-vs-perforce\p4shim.txt', 'a')
+stamp = datetime.datetime.now()
+
 def extricate(flag, envname):
 	global args
 	if flag in args:
@@ -20,6 +23,15 @@ def extricate(flag, envname):
 to_env = [('-u', 'P4USER'), ('-P', 'P4PASSWD')]
 list(map(lambda params: extricate(*params), to_env)) # list() to force evaluation - map is lazy
 
+# if there's no active ticket, log in before proceeding
+tickets = subprocess.Popen(['p4', 'tickets'], stdout=subprocess.PIPE, stderr=log).communicate()[0].split()
+if len(tickets) == 0:
+	log.write('[Log in.]\n')
+	thepass = r'C:\dev\tools\studio-vs-perforce\p4shim.password'
+	status = subprocess.call('p4 login', stdin=open(thepass), stdout=open(os.devnull), stderr=log)
+	if status != 0:
+		log.write('[Login error]\n')
+		# maybe quit here?
 def tokenize_args(args):
 	args2 = args[:]
 	while args2:
@@ -42,21 +54,12 @@ for i in range(len(args)):
 p4 = 'p4'
 commandline = ' '.join([p4]+args)
 
-log = open(r'c:\dev\tools\studio-vs-perforce\p4shim.txt', 'a')
-stamp = datetime.datetime.now()
-
 log.write('{}\t{} {}\n'.format(stamp, p4, ' '.join(args)))
 
-# log in every time; it doesn't appear to hurt anything
-status = subprocess.call('p4 login', shell=True, stdin=open('p4shim.password'), stdout=open(os.devnull), stderr=log) # complains if you specify a username, would rather assume you mean the logged-in user. Weird.
-if status != 0:
-	log.write('[Login error]\n')
-
 log.flush()
-sys.stdout.flush()
 log.close()
 
-# not redirecting anything here because Studio may need to know about stderr
+# not redirecting anything here to try to stay transparent for Studio
 exit(subprocess.call(commandline))
 
 #
