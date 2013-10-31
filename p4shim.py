@@ -44,25 +44,19 @@ commandline = ' '.join([p4]+args)
 
 log = open(r'c:\dev\tools\studio-vs-perforce\p4shim.txt', 'a')
 stamp = datetime.datetime.now()
+
 log.write('{}\t{} {}\n'.format(stamp, p4, ' '.join(args)))
 
-last = os.stat('p4shim.flag').st_atime
-if last < time.time() - 9 * 60 * 60:
-	localpipe = io.StringIO()
-	subprocess.call('p4 tickets', stdout=localpipe) # see if there are any active logins
-	localpipe.seek(0)
-	if len(localpipe.readlines()) == 0:
-		log.write('[Sign in first.]')
-		#username = open('p4username.txt').readline().strip()
-		#subprocess.call('p4 login {}'.format(username), shell=True, stdin=open('p4password.txt'))
-		subprocess.call('p4 login', shell=True, stdin=open('p4password.txt'), stdout=log, stderr=log) # complains if you specify a username, would rather assume you mean the logged-in user. Weird.
-		os.utime('p4shim.flag')
-
+# log in every time; it doesn't appear to hurt anything
+status = subprocess.call('p4 login', shell=True, stdin=open('p4shim.password'), stdout=open(os.devnull), stderr=log) # complains if you specify a username, would rather assume you mean the logged-in user. Weird.
+if status != 0:
+	log.write('[Login error]\n')
 
 log.flush()
 sys.stdout.flush()
-subprocess.call(commandline, shell=True, stderr=log)
-
 log.close()
+
+# not redirecting anything here because Studio may need to know about stderr
+exit(subprocess.call(commandline))
 
 #
