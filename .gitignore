@@ -4,6 +4,12 @@ p4shim.txt
 # ditto
 p4shim.password
 
+# don't need lock file contents
+p4shim.lock
+
+
+## auto stuff
+
 *.py[cod]
 
 # C extensions

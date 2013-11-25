@@ -27,12 +27,19 @@ def extricate(flag, envname):
 to_env = [('-u', 'P4USER'), ('-P', 'P4PASSWD')]
 list(map(lambda params: extricate(*params), to_env)) # list() to force evaluation - map is lazy
 
-if 'expires in' not in str(subprocess.Popen(['p4', 'login', '-s'], stdout=subprocess.PIPE, stderr=log).communicate()[0]):
+loginresult = str(subprocess.Popen(['p4', 'login', '-s'], stdout=subprocess.PIPE, stderr=log).communicate()[0])
+if 'expires in' not in loginresult:
+	if os.path.exists(lockfile):
+		log.write('[Login aborted due to prior failure.]\n')
+		exit(-1)
 	log.write('[Log in.]\n')
 	status = subprocess.call('p4 login', stdin=open(passwordfile), stdout=open(os.devnull), stderr=log)
 	if status != 0:
-		log.write('[Login error]\n')
-		# maybe quit here?
+		log.write('[Login error. Remove p4shim.lock to retry.]\n')
+		lock = open(lockfile, 'w')
+		lock.write(loginresult)
+		lock.close()
+		exit(status)
 
 def tokenize_args(args):
 	args2 = args[:]
