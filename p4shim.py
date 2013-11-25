@@ -6,9 +6,13 @@ import subprocess
 import sys
 import time
 
+lockfile = r'C:\dev\tools\studio-vs-perforce\p4shim.lock'
+logfile = r'C:\dev\tools\studio-vs-perforce\p4shim.txt'
+passwordfile = r'C:\dev\tools\studio-vs-perforce\p4shim.password'
+
 args = sys.argv[1:]
 
-log = open(r'c:\dev\tools\studio-vs-perforce\p4shim.txt', 'a')
+log = open(logfile, 'a')
 stamp = datetime.datetime.now()
 
 def extricate(flag, envname):
@@ -25,8 +29,7 @@ list(map(lambda params: extricate(*params), to_env)) # list() to force evaluatio
 
 if 'expires in' not in str(subprocess.Popen(['p4', 'login', '-s'], stdout=subprocess.PIPE, stderr=log).communicate()[0]):
 	log.write('[Log in.]\n')
-	thepass = r'C:\dev\tools\studio-vs-perforce\p4shim.password'
-	status = subprocess.call('p4 login', stdin=open(thepass), stdout=open(os.devnull), stderr=log)
+	status = subprocess.call('p4 login', stdin=open(passwordfile), stdout=open(os.devnull), stderr=log)
 	if status != 0:
 		log.write('[Login error]\n')
 		# maybe quit here?
