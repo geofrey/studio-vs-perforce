@@ -33,13 +33,14 @@ if 'expires in' not in loginresult:
 		log.write('[Login aborted due to prior failure.]\n')
 		exit(-1)
 	log.write('[Log in.]\n')
-	status = subprocess.call('p4 login', stdin=open(passwordfile), stdout=open(os.devnull), stderr=log)
-	if status != 0:
+	login = subprocess.Popen('p4 login', stdin=open(passwordfile), stdout=log, stderr=subprocess.PIPE)
+	output = login.communicate()
+	if login.returncode != 0:
 		log.write('[Login error. Remove p4shim.lock to retry.]\n')
 		lock = open(lockfile, 'w')
-		lock.write(loginresult)
+		lock.write(output[1]) // stderr
 		lock.close()
-		exit(status)
+		exit(login.returncode)
 
 def tokenize_args(args):
 	args2 = args[:]
